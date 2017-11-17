@@ -1,0 +1,14 @@
+STRINGTABLE lobject
+{
+	lobject  "L-Object";
+
+	L_OBJECT_HEIGHT                "Height";
+	L_OBJECT_WIDTH                 "Width";
+	L_OBJECT_DEPTH                 "Depth";
+	L_OBJECT_CURVE_OFFSET          "Curve offset";
+	L_OBJECT_WIDTH_SEGMENTS        "Width segments";
+	L_OBJECT_PHONG_TAB             "Phong";
+	L_OBJECT_ENABLE_PHONG_TAG      "Enable phong";
+	L_OBJECT_ANGLE_LIMIT           "Angle limit";
+	L_OBJECT_PHONG_ANGLE           "Phong angle";
+}

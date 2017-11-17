@@ -1,0 +1,14 @@
+STRINGTABLE lobject
+{
+	lobject    "L-Object";
+
+	L_OBJECT_HEIGHT                "Hauteur";
+	L_OBJECT_WIDTH                 "Largeur";
+	L_OBJECT_DEPTH                 "Profondeur";
+	L_OBJECT_CURVE_OFFSET          "Arrondi";
+	L_OBJECT_WIDTH_SEGMENTS        "Segments de largeur";
+	L_OBJECT_PHONG_TAB             "Lissage";
+	L_OBJECT_ENABLE_PHONG_TAG      "Activer lissage";
+	L_OBJECT_ANGLE_LIMIT           "Angle maximum";
+	L_OBJECT_PHONG_ANGLE           "Lissage jusqu'\u00E0";
+}
