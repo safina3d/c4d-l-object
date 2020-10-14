@@ -11,3 +11,15 @@ Clone the project or download the zip file and extract it into the Maxon plugins
 
 - Windows: `C:\Program Files\MAXON\CINEMA 4D R<version>\plugins\`
 - MacOS: `/Applications/MAXON/CINEMA 4D R1<version>/plugins/`
+
+### ChangeLog
+
+- V2.0
+  - R23/Python update
+  - Shape improvement (L to C) 
+
+- V1.1
+    - R22 Fix
+    - UI Language fix
+         
+- V1.0

@@ -1,161 +1,270 @@
 # -*- coding: utf-8 -*-
 
 # Author: safina3d
+# Version: 2.0
 # Url: https://safina3d.blogspot.com
 
 import os
 import c4d
-from c4d import plugins, bitmaps, BaseObject, SplineObject, Vector, HandleInfo
+from c4d import plugins, bitmaps, BaseObject, SplineObject, Vector, HandleInfo, utils, documents
 
 PLUGIN_ID = 1027130
 
 
-class Helper:
+class Helper(object):
 
-    VECTOR_ZERO = Vector(0)
-    VECTOR_ONE_X = Vector(1, 0, 0)
-    VECTOR_ONE_Y = Vector(0, 1, 0)
-    VECTOR_ONE_Z = Vector(0, 0, 1)
+    VEC_ZERO = Vector(0)
+    VEC_ONE_X = Vector(1, 0, 0)
+    VEC_ONE_Y = Vector(0, 1, 0)
+    VEC_ONE_Z = Vector(0, 0, 1)
 
     DEFAULT_COLOR = c4d.GetViewColor(c4d.VIEWCOLOR_ACTIVEPOINT)
+    DEFAULT_COLOR_BIS = Vector(0.54, 0.758, 0.984)
     ACTIVE_COLOR = c4d.GetViewColor(c4d.VIEWCOLOR_SELECTION_PREVIEW)
 
-    def __init__(self): pass
+    PARAM_LIST = [
+        c4d.HEIGHT_0,
+        c4d.HEIGHT_1,
+        c4d.WIDTH,
+        c4d.DEPTH_0,
+        c4d.DEPTH_1,
+        c4d.CURVE_OFFSET_0,
+        c4d.CURVE_OFFSET_1,
+        c4d.CURVE_OFFSET_2,
+        c4d.WIDTH_SEGMENTS
+    ]
 
 
 class LObject(plugins.ObjectData):
 
-    def Init(self, op):
+    def __init__(self):
         self.SetOptimizeCache(True)
 
-        # Initialization
-        self.InitAttr(op, float, [c4d.L_OBJECT_HEIGHT])
-        self.InitAttr(op, float, [c4d.L_OBJECT_DEPTH])
-        self.InitAttr(op, float, [c4d.L_OBJECT_WIDTH])
-        self.InitAttr(op, float, [c4d.L_OBJECT_CURVE_OFFSET])
-        self.InitAttr(op, float, [c4d.L_OBJECT_WIDTH_SEGMENTS])
-        self.InitAttr(op, bool, [c4d.L_OBJECT_ENABLE_PHONG_TAG])
-        self.InitAttr(op, bool, [c4d.L_OBJECT_ANGLE_LIMIT])
-        self.InitAttr(op, float, [c4d.L_OBJECT_PHONG_ANGLE])
+    def Init(self, op):
 
-        # Default values
-        op[c4d.L_OBJECT_HEIGHT] = 1000
-        op[c4d.L_OBJECT_DEPTH] = 300
-        op[c4d.L_OBJECT_WIDTH] = 750
-        op[c4d.L_OBJECT_CURVE_OFFSET] = 100
-        op[c4d.L_OBJECT_WIDTH_SEGMENTS] = 1
-        op[c4d.L_OBJECT_ENABLE_PHONG_TAG] = True
-        op[c4d.L_OBJECT_ANGLE_LIMIT] = False
-        op[c4d.L_OBJECT_PHONG_ANGLE] = 1.0472
+        # Parameter Initialization
+        default_values = [300., 1200., 1500., 1500., 1000., 100., 250., 250., 1]
+        param_count = len(Helper.PARAM_LIST) - 1
+
+        for i in range(param_count):
+            param_id = Helper.PARAM_LIST[i]
+            self.InitAttr(op, float, [param_id])
+            op[param_id] = default_values[i]
+
+        self.InitAttr(op, int, [c4d.WIDTH_SEGMENTS])
+        op[c4d.WIDTH_SEGMENTS] = default_values[param_count]
 
         return True
 
-    def GetDimension(self, op, mp, rad):
-        rad.x = op[c4d.L_OBJECT_WIDTH]
-        rad.y = 0.5 * (op[c4d.L_OBJECT_HEIGHT] + op[c4d.L_OBJECT_CURVE_OFFSET])
-        rad.z = 500 + op[c4d.L_OBJECT_DEPTH] * 0.5
-        mp.y = rad.y
-        mp.z = op[c4d.L_OBJECT_DEPTH] * 0.5
-
     def GetHandleCount(self, op):
-        return 3
+        return 8
 
     def GetHandle(self, op, handle_index, handle_info):
-        l_object_depth = op[c4d.L_OBJECT_DEPTH] + 500 if op[c4d.L_OBJECT_DEPTH] is not None else 800
-        l_object_width = op[c4d.L_OBJECT_WIDTH] if op[c4d.L_OBJECT_WIDTH] is not None else 750
-        l_object_height = op[c4d.L_OBJECT_HEIGHT] if op[c4d.L_OBJECT_HEIGHT] is not None else 500
 
-        if handle_index == 0:
-            handle_info.position = Vector(l_object_width, 0, 0)
-            handle_info.direction = Helper.VECTOR_ONE_X
-        elif handle_index == 1:
-            handle_info.position = Vector(0, l_object_height, l_object_depth)
-            handle_info.direction = Helper.VECTOR_ONE_Y
-        elif handle_index == 2:
-            handle_info.position = Vector(0, 0, l_object_depth)
-            handle_info.direction = Helper.VECTOR_ONE_Z
+        h0 = op[c4d.HEIGHT_0]
+        h1 = op[c4d.HEIGHT_1]
+        half_width = op[c4d.WIDTH] * 0.5
+        half_depth_0 = op[c4d.DEPTH_0] * 0.5
+        d1 = op[c4d.DEPTH_1]
+        c0 = op[c4d.CURVE_OFFSET_0]
+        c1 = op[c4d.CURVE_OFFSET_1]
+        c2 = op[c4d.CURVE_OFFSET_2]
 
+        handles_position = [
+            Vector(0, -h0, -half_depth_0),
+            Vector(0, h1, half_depth_0),
+            Vector(half_width, 0, 0),
+            Vector(0, 0, -half_depth_0),
+            Vector(0, h1, half_depth_0 - d1),
+            Vector(half_width, -c0, -half_depth_0),
+            Vector(half_width, c1, half_depth_0),
+            Vector(half_width, h1, half_depth_0 - c2)
+        ]
+
+        handles_direction = [
+            -Helper.VEC_ONE_Y,
+            Helper.VEC_ONE_Y,
+            Helper.VEC_ONE_X,
+            -Helper.VEC_ONE_Z,
+            -Helper.VEC_ONE_Z,
+            -Helper.VEC_ONE_Y,
+            Helper.VEC_ONE_Y,
+            -Helper.VEC_ONE_Z
+        ]
+
+        handle_info.position = handles_position[handle_index]
+        handle_info.direction = handles_direction[handle_index]
         handle_info.type = c4d.HANDLECONSTRAINTTYPE_LINEAR
 
     def SetHandle(self, op, handle_index, handle_position, handle_info):
         handle_origin = HandleInfo()
         self.GetHandle(op, handle_index, handle_origin)
-
         value = (handle_position - handle_origin.position) * handle_info.direction
 
-        if handle_index == 0:
-            op[c4d.L_OBJECT_WIDTH] += value
-            op[c4d.L_OBJECT_WIDTH] = op[c4d.L_OBJECT_WIDTH] if op[c4d.L_OBJECT_WIDTH] > 0 else 0.0001
-        elif handle_index == 1:
-            op[c4d.L_OBJECT_HEIGHT] += value
-        elif handle_index == 2:
-            op[c4d.L_OBJECT_DEPTH] += value
+        handle_count = self.GetHandleCount(op)
+
+        # Update node params
+        if handle_index < handle_count:
+            parameter = Helper.PARAM_LIST[handle_index]
+            op[parameter] += value
 
     def Draw(self, op, drawpass, bd, bh):
         if drawpass != c4d.DRAWPASS_HANDLES:
             return c4d.DRAWRESULT_SKIP
 
         bd.SetMatrix_Matrix(op, bh.GetMg())
-        hitid = op.GetHighlightHandle(bd)
+        handle_id = op.GetHighlightHandle(bd)
+        handle_count = self.GetHandleCount(op)
 
-        self.__draw_handle(bd, op, 0, 0 == hitid, Helper.VECTOR_ZERO)
-        self.__draw_handle(bd, op, 1, 1 == hitid, Vector(0, 0, 500 + op[c4d.L_OBJECT_DEPTH]))
-        self.__draw_handle(bd, op, 2, 2 == hitid, Helper.VECTOR_ZERO)
+        for i in range(handle_count):
+            self._draw_handle(bd, op, i, handle_id == i)
 
         return c4d.DRAWRESULT_OK
 
     def GetVirtualObjects(self, op, hh):
+
         extrude_object = BaseObject(c4d.Oextrude)
-        spline_object = SplineObject(4, c4d.SPLINETYPE_BEZIER)
+        spline_object = SplineObject(8, c4d.SPLINETYPE_BEZIER)
 
-        LObject.__create_spline_object(spline_object, op)
+        LObject._create_spline_object(spline_object, op)
 
-        extrude_object[c4d.EXTRUDEOBJECT_MOVE] = Vector(op[c4d.L_OBJECT_WIDTH] * 2, 0, 0)
-        extrude_object[c4d.EXTRUDEOBJECT_SUB] = int(op[c4d.L_OBJECT_WIDTH_SEGMENTS])
-        extrude_object.SetPhong(
-            op[c4d.L_OBJECT_ENABLE_PHONG_TAG],
-            op[c4d.L_OBJECT_ANGLE_LIMIT],
-            op[c4d.L_OBJECT_PHONG_ANGLE]
-        )
+        # R23 Fix
+        if c4d.GetC4DVersion() >= 23000:
+            extrude_object[c4d.EXTRUDEOBJECT_DIRECTION] = 5
+
+        extrude_object[c4d.EXTRUDEOBJECT_MOVE] = Vector(op[c4d.WIDTH], 0, 0)
+        extrude_object[c4d.EXTRUDEOBJECT_SUB] = op[c4d.WIDTH_SEGMENTS]
+        extrude_object[c4d.EXTRUDEOBJECT_FLIPNORMALS] = True
+
         spline_object.InsertUnder(extrude_object)
-        return extrude_object
 
-    def GetDEnabling(self, node, id, t_data, flags, itemdesc):
-        data = node.GetDataInstance()
-        if data is None:
-            return
-        current_id = id[0].id
-        if c4d.L_OBJECT_PHONG_ANGLE == current_id or c4d.L_OBJECT_ANGLE_LIMIT == current_id:
-            return 1 == data.GetLong(c4d.L_OBJECT_ENABLE_PHONG_TAG)
+        # Convert to polygon object
+        result = utils.SendModelingCommand(c4d.MCOMMAND_CURRENTSTATETOOBJECT, doc=documents.GetActiveDocument(), list=[extrude_object])
+        if not result:
+            return None
+
+        result = result[0]
+
+        # Remove selection tags
+        tags = result.GetTags()
+        for tag in tags:
+            tag_type = tag.GetType()
+            if tag_type == c4d.Tpolygonselection or tag_type == c4d.Tedgeselection:
+                tag.Remove()
+
+        # Add phong tag
+        phong = op.GetTag(c4d.Tphong)
+        if phong is None:
+            phong = op.MakeTag(c4d.Tphong)
+
+        if phong is not None:
+            phong[c4d.PHONGTAG_PHONG_ANGLELIMIT] = True
+            phong[c4d.PHONGTAG_PHONG_USEEDGES] = False
+            result.InsertTag(phong.GetClone())
+
+        return result
+
+    def Message(self, node, type, data):
+        if type == c4d.MSG_DESCRIPTION_POSTSETPARAMETER:
+            current_id = data['descid'][0].id
+            current_value = node[current_id]
+
+            h0 = node[c4d.HEIGHT_0] or 0
+            h1 = node[c4d.HEIGHT_1] or 0
+            d0 = node[c4d.DEPTH_0] or 0
+            d1 = node[c4d.DEPTH_1] or 0
+            c0 = node[c4d.CURVE_OFFSET_0] or 0
+            c1 = node[c4d.CURVE_OFFSET_1] or 0
+            c2 = node[c4d.CURVE_OFFSET_2] or 0
+
+            if current_id == c4d.HEIGHT_0:
+                if current_value < c0:
+                    node[c4d.CURVE_OFFSET_0] = current_value
+
+            elif current_id == c4d.CURVE_OFFSET_0:
+                if current_value > h0:
+                    node[c4d.HEIGHT_0] = current_value
+                if current_value > (d0 - c1):
+                    node[c4d.DEPTH_0] = current_value + c1
+
+            elif current_id == c4d.DEPTH_0:
+                if current_value - c0 < c1:
+                    node[c4d.CURVE_OFFSET_1] = current_value - c0
+                if current_value - c1 < c0:
+                    node[c4d.CURVE_OFFSET_0] = current_value - c1
+
+            elif current_id == c4d.CURVE_OFFSET_1:
+                if current_value > (d0 - c0):
+                    node[c4d.DEPTH_0] = current_value + c0
+                if current_value > (h1 - c2):
+                    node[c4d.HEIGHT_1] = current_value + c2
+
+            elif current_id == c4d.CURVE_OFFSET_2:
+                if current_value > (h1 - c1):
+                    node[c4d.HEIGHT_1] = current_value + c1
+                if current_value > d1:
+                    node[c4d.DEPTH_1] = current_value
+
+            elif current_id == c4d.HEIGHT_1:
+                if current_value - c2 < c1:
+                    node[c4d.CURVE_OFFSET_1] = current_value - c2
+                if current_value - c1 < c2:
+                    node[c4d.CURVE_OFFSET_2] = current_value - c1
+
+            elif current_id == c4d.DEPTH_1:
+                if current_value < c2:
+                    node[c4d.CURVE_OFFSET_2] = current_value
+
         return True
 
-    def __draw_handle(self, bd, op, handle_index, handle_is_selected, start_position):
-        bd.SetPen(Helper.ACTIVE_COLOR if handle_is_selected else Helper.DEFAULT_COLOR)
-        handle_info = HandleInfo()
-        self.GetHandle(op, handle_index, handle_info)
-        bd.DrawHandle(handle_info.position, c4d.DRAWHANDLE_BIG, 0)
-        bd.DrawLine(start_position, handle_info.position, 0)
+    def _draw_handle(self, bd, op, handle_index, handle_is_selected):
+        if handle_index < 5:
+            bd.SetPen(Helper.ACTIVE_COLOR if handle_is_selected else Helper.DEFAULT_COLOR)
+        else:
+            bd.SetPen(Helper.ACTIVE_COLOR if handle_is_selected else Helper.DEFAULT_COLOR_BIS)
+
+        handle = HandleInfo()
+        self.GetHandle(op, handle_index, handle)
+        bd.DrawHandle(handle.position, c4d.DRAWHANDLE_BIG, 0)
+        bd.DrawLine(handle.position + handle.direction * 50, handle.position, 0)
 
     @staticmethod
-    def __create_spline_object(spline_object, op):
-        height = op[c4d.L_OBJECT_HEIGHT] + op[c4d.L_OBJECT_CURVE_OFFSET]
-        depth = op[c4d.L_OBJECT_DEPTH]
-        curve_offset = op[c4d.L_OBJECT_CURVE_OFFSET]
-        width = op[c4d.L_OBJECT_WIDTH]
+    def _create_spline_object(spline, op):
 
-        spline_object.SetPoint(0, Vector(0, 0, -depth))
-        spline_object.SetPoint(1, Vector(0, 0, 1000 - curve_offset))
-        spline_object.SetPoint(2, Vector(0, curve_offset, 1000))
-        spline_object.SetPoint(3, Vector(0, height, 1000))
+        h0 = op[c4d.HEIGHT_0]
+        h1 = op[c4d.HEIGHT_1]
+        w = op[c4d.WIDTH] * 0.5
+        d0 = op[c4d.DEPTH_0] * 0.5
+        d1 = op[c4d.DEPTH_1]
+        c0 = op[c4d.CURVE_OFFSET_0]
+        c1 = op[c4d.CURVE_OFFSET_1]
+        c2 = op[c4d.CURVE_OFFSET_2]
 
-        spline_object.SetTangent(1, Helper.VECTOR_ZERO, Vector(0, 0, curve_offset * 0.5))
-        spline_object.SetTangent(2, Vector(0, -curve_offset * 0.5, 0), Helper.VECTOR_ZERO)
+        point_list = [
+            Vector(0, -h0, -d0), Vector(0, -c0, -d0), Vector(0, 0, -(d0 - c0)), Vector(0, 0, d0 - c1),
+            Vector(0, c1, d0), Vector(0, h1 - c2, d0), Vector(0, h1, d0 - c2), Vector(0, h1, d0 - d1)
+        ]
 
-        spline_object.SetAbsPos(Vector(-width, 0, depth - 500))
-        spline_object.Message(c4d.MSG_UPDATE)
+        for i, p in enumerate(point_list):
+            spline.SetPoint(i, p)
+
+        # SetTangent for points 1 & 2
+        spline.SetTangent(1, Helper.VEC_ZERO, Vector(0, c0 * 0.5, 0))
+        spline.SetTangent(2, Vector(0, 0, -c0 * 0.5), Helper.VEC_ZERO)
+
+        # SetTangent for points 3 & 4
+        spline.SetTangent(3, Helper.VEC_ZERO, Vector(0, 0, c1 * 0.5))
+        spline.SetTangent(4, Vector(0, -c1 * 0.5, 0), Helper.VEC_ZERO)
+
+        # SetTangent for points 5 & 6
+        spline.SetTangent(5, Helper.VEC_ZERO, Vector(0, c2 * 0.5, 0))
+        spline.SetTangent(6, Vector(0, 0, c2 * 0.5), Helper.VEC_ZERO)
+
+        spline.SetAbsPos(Vector(-w, 0, 0))
+        spline.Message(c4d.MSG_UPDATE)
 
 
 if __name__ == "__main__":
     icon = bitmaps.BaseBitmap()
     icon.InitWith(os.path.join(os.path.dirname(__file__), 'res', 'lobject.png'))
-    plugins.RegisterObjectPlugin(PLUGIN_ID, 'L-Object', LObject, 'lobject', c4d.OBJECT_GENERATOR, icon)
+    plugins.RegisterObjectPlugin(PLUGIN_ID, 'L-Object', LObject, 'olobject', c4d.OBJECT_GENERATOR, icon)

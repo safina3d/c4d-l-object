@@ -1,0 +1,14 @@
+STRINGTABLE olobject
+{
+	olobject  "L-Object";
+
+	HEIGHT_0               "Height 0";
+	HEIGHT_1               "Height 1";
+	WIDTH                  "Width";
+	DEPTH_0                "Depth 0";
+	DEPTH_1                "Depth 1";
+	CURVE_OFFSET_0         "Curve Offset 0";
+	CURVE_OFFSET_1         "Curve Offset 1";
+	CURVE_OFFSET_2         "Curve Offset 2";
+	WIDTH_SEGMENTS         "Width segment";
+}
