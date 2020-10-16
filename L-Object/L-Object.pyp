@@ -22,18 +22,6 @@ class Helper(object):
     DEFAULT_COLOR_BIS = Vector(0.54, 0.758, 0.984)
     ACTIVE_COLOR = c4d.GetViewColor(c4d.VIEWCOLOR_SELECTION_PREVIEW)
 
-    PARAM_LIST = [
-        c4d.HEIGHT_0,
-        c4d.HEIGHT_1,
-        c4d.WIDTH,
-        c4d.DEPTH_0,
-        c4d.DEPTH_1,
-        c4d.CURVE_OFFSET_0,
-        c4d.CURVE_OFFSET_1,
-        c4d.CURVE_OFFSET_2,
-        c4d.WIDTH_SEGMENTS
-    ]
-
 
 class LObject(plugins.ObjectData):
 
@@ -43,11 +31,16 @@ class LObject(plugins.ObjectData):
     def Init(self, op):
 
         # Parameter Initialization
+        param_list = [
+            c4d.HEIGHT_0, c4d.HEIGHT_1, c4d.WIDTH, c4d.DEPTH_0,
+            c4d.DEPTH_1, c4d.CURVE_OFFSET_0, c4d.CURVE_OFFSET_1,
+            c4d.CURVE_OFFSET_2
+        ]
         default_values = [300., 1200., 1500., 1500., 1000., 100., 250., 250., 1]
-        param_count = len(Helper.PARAM_LIST) - 1
+        param_count = len(param_list)
 
         for i in range(param_count):
-            param_id = Helper.PARAM_LIST[i]
+            param_id = param_list[i]
             self.InitAttr(op, float, [param_id])
             op[param_id] = default_values[i]
 
@@ -60,7 +53,6 @@ class LObject(plugins.ObjectData):
         return 8
 
     def GetHandle(self, op, handle_index, handle_info):
-
         h0 = op[c4d.HEIGHT_0]
         h1 = op[c4d.HEIGHT_1]
         half_width = op[c4d.WIDTH] * 0.5
@@ -102,10 +94,13 @@ class LObject(plugins.ObjectData):
         value = (handle_position - handle_origin.position) * handle_info.direction
 
         handle_count = self.GetHandleCount(op)
-
+        param_list = [
+            c4d.HEIGHT_0, c4d.HEIGHT_1, c4d.WIDTH, c4d.DEPTH_0, c4d.DEPTH_1,
+            c4d.CURVE_OFFSET_0, c4d.CURVE_OFFSET_1, c4d.CURVE_OFFSET_2
+        ]
         # Update node params
         if handle_index < handle_count:
-            parameter = Helper.PARAM_LIST[handle_index]
+            parameter = param_list[handle_index]
             op[parameter] += value
 
     def Draw(self, op, drawpass, bd, bh):
