@@ -1,0 +1,5 @@
+# Release archives contain only the plugin and the README
+tests/          export-ignore
+images/         export-ignore
+.gitignore      export-ignore
+.gitattributes  export-ignore

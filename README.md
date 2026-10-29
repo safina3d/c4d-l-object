@@ -4,7 +4,7 @@ A Cinema 4D plugin that creates a stage for your test and final renders: a floor
 
 More on [safina3d.blogspot.com](https://safina3d.blogspot.com).
 
-![L-Object stage](images/stage.png)
+![L-Object stage](https://raw.githubusercontent.com/safina3d/c4d-l-object/master/images/stage.png)
 
 ## Features
 
@@ -75,7 +75,7 @@ A curve can't be larger than the parts it joins: increasing it beyond that also 
 
 | L | C | Cyclo | Table |
 |---|---|---|---|
-| ![L](images/preset-l.png) | ![C](images/preset-c.png) | ![Cyclo](images/preset-cyclo.png) | ![Table](images/preset-table.png) |
+| ![L](https://raw.githubusercontent.com/safina3d/c4d-l-object/master/images/preset-l.png) | ![C](https://raw.githubusercontent.com/safina3d/c4d-l-object/master/images/preset-c.png) | ![Cyclo](https://raw.githubusercontent.com/safina3d/c4d-l-object/master/images/preset-cyclo.png) | ![Table](https://raw.githubusercontent.com/safina3d/c4d-l-object/master/images/preset-table.png) |
 
 The **L**, **C**, **Cyclo** and **Table** buttons change the shape of the stage. The width, thickness, side panels and subdivisions are kept. Use **Undo** to go back.
 
