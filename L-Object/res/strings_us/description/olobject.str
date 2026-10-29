@@ -1,14 +1,32 @@
 STRINGTABLE olobject
 {
-	olobject  "L-Object";
+	olobject  "Stage Object";
 
-	HEIGHT_0               "Height 0";
-	HEIGHT_1               "Height 1";
+	SEPARATOR_PRESETS      "Presets";
+	PRESET_L               "L";
+	PRESET_C               "C";
+	PRESET_CYCLO           "Cyclo";
+	PRESET_TABLE           "Table";
+
 	WIDTH                  "Width";
-	DEPTH_0                "Depth 0";
-	DEPTH_1                "Depth 1";
-	CURVE_OFFSET_0         "Curve Offset 0";
-	CURVE_OFFSET_1         "Curve Offset 1";
-	CURVE_OFFSET_2         "Curve Offset 2";
-	WIDTH_SEGMENTS         "Width segment";
+	THICKNESS              "Thickness";
+	LEFT_SIDE              "Left Side";
+	RIGHT_SIDE             "Right Side";
+
+	SEPARATOR_FLOOR        "Floor";
+	FLOOR_DEPTH            "Floor Depth";
+	FRONT_HEIGHT           "Front Height";
+	FRONT_RADIUS           "Front Curve Radius";
+
+	SEPARATOR_WALL         "Back Wall";
+	WALL_HEIGHT            "Wall Height";
+	BACK_RADIUS            "Back Curve Radius";
+
+	SEPARATOR_TOP          "Top";
+	TOP_DEPTH              "Top Depth";
+	TOP_RADIUS             "Top Curve Radius";
+
+	SEPARATOR_SUBDIVISION  "Subdivision";
+	WIDTH_SEGMENTS         "Width Segments";
+	CURVE_SEGMENTS         "Curve Segments";
 }
